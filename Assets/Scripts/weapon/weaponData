@@ -1,0 +1,21 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEditor;
+using UnityEngine;
+
+[CreateAssetMenu(fileName = "WeaponData", menuName = "Weapon/WeaponData")]
+
+public class weaponData : ScriptableObject
+{
+    [Header("Info")]
+    public new string name;
+
+    [Header("Tiro")]
+    public Transform bulletPrefab;
+    public float shootingTime;
+    [Header("Recarregar")]
+    public float currentAmmo;
+
+
+    [HideInInspector] public bool reloading = false;
+}
