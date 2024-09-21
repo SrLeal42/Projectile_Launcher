@@ -1,0 +1,146 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class projectile : MonoBehaviour
+{
+    public projectileData PData;
+
+    [Header("Gravidade")]
+    public float gravEstatica = -9.81f; // Gravidade estatica 
+    public float grav_mult = 1.5f; // Multiplicador da gravidade
+
+    [Header("Resistência do ar")]
+    public float dragCoefficient = 0.47f; // Coeficiente de arrasto para uma esfera
+    public float crossSectionArea = 0.01f; // Area da seção transversal em m2
+    public float airDensity = 1.225f; // Densidade do ar em kg/m3
+
+    private Vector3 velocity;
+    [HideInInspector] public float vel;
+
+
+    private float timeToDestroy;
+    
+
+    private BoxCollider hitBox;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        //CC = GetComponent<CharacterController>();
+        hitBox = GetComponent<BoxCollider>();
+        timeToDestroy = PData.timeToDestroy;
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        movimento();
+
+        if (timeToDestroy <= 0)
+        {
+            Destroy(gameObject);
+        }
+
+        timeToDestroy -= 1 * Time.deltaTime;
+
+        /*
+        Collider[] colliders = Physics.OverlapBox(transform.position, hitBox.size / 2, transform.rotation);
+
+        if (colliders.Length > 0)
+        {
+            IDamageable damageable = colliders[0].GetComponent<IDamageable>();
+
+            if (damageable != null)
+            {
+                damageable.damage(damage);
+                Destroy(gameObject);
+            }
+
+
+
+        }*/
+
+    }
+
+   
+    public bool colisaoChao()
+    {
+        Collider[] colliders = Physics.OverlapBox(transform.position, hitBox.size / 2, transform.rotation);
+
+        if (colliders.Length > 0)
+        {
+            for (int i = 0; i < colliders.Length; i++)
+            {
+                if (colliders[i].transform.tag == "chao") {  return true; }
+            }
+        }
+
+        return false;
+    }
+    public void setDirection(Vector3 direction)
+    {
+        velocity = direction * vel;
+    }
+
+    public void desaceleracao()
+    {
+        /*
+        atrito = colisaoChao() ? resitAr + resitChao : resitAr;
+
+        Vector3 horizontalVelocity = new Vector3(velocity.x, 0, velocity.z);
+        horizontalVelocity = Vector3.MoveTowards(horizontalVelocity, Vector3.zero, atrito * Time.deltaTime);
+
+        velocity = new Vector3(horizontalVelocity.x, velocity.y, horizontalVelocity.z);
+        */
+
+        float speedMagnitude = velocity.magnitude;
+
+
+        if (speedMagnitude <= 0) return;
+
+        if (colisaoChao())
+        {
+            float groundFriction = 3f * PData.weight;
+            velocity *= (1 - groundFriction * Time.deltaTime);
+
+            if (speedMagnitude < 0.1)
+            {
+                velocity = Vector3.zero;
+            }
+
+        } else {
+
+            float dragForceMagnitude = 0.5f * dragCoefficient * airDensity * crossSectionArea * speedMagnitude * speedMagnitude;
+            Vector3 dragForce = -velocity.normalized * dragForceMagnitude;
+            velocity += dragForce * Time.deltaTime;
+
+        }
+        
+        //Debug.Log("DRAg"+dragForce);
+    }
+
+    public void gravidade()
+    {
+        if (colisaoChao())
+        {
+            velocity.y = 0;
+            return;
+        }
+        
+        velocity.y += gravEstatica * Time.deltaTime;
+    }
+
+    public void movimento()
+    {
+        gravidade();
+        desaceleracao();
+
+        //Debug.Log("Vel" + velocity);
+        transform.position += velocity * Time.deltaTime;
+
+        transform.forward = velocity != Vector3.zero? 
+            Vector3.MoveTowards(transform.forward, velocity, 100f * Time.deltaTime): transform.forward;//olhando para o movimento
+    }
+
+}
