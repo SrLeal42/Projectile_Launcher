@@ -44,22 +44,23 @@ public class projectile : MonoBehaviour
 
         timeToDestroy -= 1 * Time.deltaTime;
 
-        /*
+        
         Collider[] colliders = Physics.OverlapBox(transform.position, hitBox.size / 2, transform.rotation);
-
+        
         if (colliders.Length > 0)
         {
-            IDamageable damageable = colliders[0].GetComponent<IDamageable>();
+            for (int i = 0; i < colliders.Length; i++) {
+                
+                IDamageableScript damageable = colliders[i].GetComponent<IDamageableScript>();
 
-            if (damageable != null)
-            {
-                damageable.damage(damage);
-                Destroy(gameObject);
+                if (damageable != null)
+                {
+                    damageable.damage(PData.damage, gameObject.GetInstanceID());
+                }
             }
 
 
-
-        }*/
+        }
 
     }
 
