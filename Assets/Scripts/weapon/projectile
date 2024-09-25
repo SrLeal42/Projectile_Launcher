@@ -21,6 +21,7 @@ public class projectile : MonoBehaviour
 
     private float timeToDestroy;
     
+    private bool estaEstacado = false;
 
     private BoxCollider hitBox;
 
@@ -65,15 +66,15 @@ public class projectile : MonoBehaviour
     }
 
    
-    public bool colisaoChao()
+    public bool detectarColisaoPelaTag(string tag)
     {
-        Collider[] colliders = Physics.OverlapBox(transform.position, hitBox.size / 2, transform.rotation);
+        Collider[] colliders = Physics.OverlapBox(transform.position, hitBox.size.x * transform.localScale, transform.rotation);
 
         if (colliders.Length > 0)
         {
             for (int i = 0; i < colliders.Length; i++)
             {
-                if (colliders[i].transform.tag == "chao") {  return true; }
+                if (colliders[i].transform.tag == tag) {  return true; }
             }
         }
 
@@ -84,25 +85,35 @@ public class projectile : MonoBehaviour
         velocity = direction * vel;
     }
 
+
+    public void estacar()
+    {
+        Debug.Log("MAG " + velocity.magnitude);
+
+        if (!detectarColisaoPelaTag("parede")) return;
+
+        float velMin = 8;
+
+        if (velocity.magnitude > velMin || estaEstacado) {
+            velocity = Vector3.zero;
+            estaEstacado = true;
+        } else if(velocity.magnitude <= velMin && !estaEstacado)
+        {
+            velocity.x = 0;
+            velocity.z = 0;
+        }
+    }
+
     public void desaceleracao()
     {
-        /*
-        atrito = colisaoChao() ? resitAr + resitChao : resitAr;
-
-        Vector3 horizontalVelocity = new Vector3(velocity.x, 0, velocity.z);
-        horizontalVelocity = Vector3.MoveTowards(horizontalVelocity, Vector3.zero, atrito * Time.deltaTime);
-
-        velocity = new Vector3(horizontalVelocity.x, velocity.y, horizontalVelocity.z);
-        */
-
         float speedMagnitude = velocity.magnitude;
 
 
         if (speedMagnitude <= 0) return;
 
-        if (colisaoChao())
+        if (detectarColisaoPelaTag("chao"))
         {
-            float groundFriction = 3f * PData.weight;
+            float groundFriction = 5f * PData.weight;
             velocity *= (1 - groundFriction * Time.deltaTime);
 
             if (speedMagnitude < 0.1)
@@ -123,7 +134,7 @@ public class projectile : MonoBehaviour
 
     public void gravidade()
     {
-        if (colisaoChao())
+        if (detectarColisaoPelaTag("chao"))
         {
             velocity.y = 0;
             return;
@@ -136,6 +147,7 @@ public class projectile : MonoBehaviour
     {
         gravidade();
         desaceleracao();
+        if (PData.isPointed) estacar();
 
         //Debug.Log("Vel" + velocity);
         transform.position += velocity * Time.deltaTime;
