@@ -9,4 +9,5 @@ public class projectileData : ScriptableObject
     public float timeToDestroy = 5f;
     public float damage = 1;
     public float weight = 1;
+    public bool isPointed = false;
 }
