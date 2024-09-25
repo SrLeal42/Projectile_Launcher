@@ -5,6 +5,8 @@ using UnityEngine;
 public class weaponScript : MonoBehaviour
 {
     public weaponData WData;
+    public weaponData[] allWeapons;
+    private int WIndex = 0;
     [HideInInspector] public bool shooting = false;
     private float timeSinceLastShoot;
     public Transform muzzle;
@@ -22,6 +24,12 @@ public class weaponScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
+        if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            changeWeapon();
+        }
+
         timeSinceLastShoot += Time.deltaTime;
 
         if (timeSinceLastShoot >= WData.shootingTime)
@@ -54,4 +62,22 @@ public class weaponScript : MonoBehaviour
         }
 
     }
+
+    public void changeWeapon()
+    {
+        WIndex++;
+
+        if (WIndex >= allWeapons.Length)
+        {
+            WIndex = 0;
+        } else if (WIndex < 0)
+        {
+            WIndex = allWeapons.Length - 1;
+        }
+
+        WData = allWeapons[WIndex];
+
+    }
+
+
 }
