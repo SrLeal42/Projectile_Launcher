@@ -6,7 +6,6 @@ using UnityEngine.PlayerLoop;
 public class DamageableScript : MonoBehaviour, IDamageableScript
 {
     private BallonScript BS;
-    private List<int> whoDamageMe = new List<int>();
     private float health = 0;
 
     private void Awake()
@@ -22,13 +21,11 @@ public class DamageableScript : MonoBehaviour, IDamageableScript
         }
     }
 
-    public void damage(float dano, int id)
+    public void damage(float dano)
     {
-        if (health <= 0 || whoDamageMe.Contains(id)) return;
 
         health -= dano;
-        whoDamageMe.Add(id);
-        Debug.Log("HEL" + health);
+        //Debug.Log("HEL" + health);
 
        
     }
