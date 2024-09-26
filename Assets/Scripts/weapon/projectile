@@ -22,6 +22,7 @@ public class projectile : MonoBehaviour
     private float timeToDestroy;
     
     private bool estaEstacado = false;
+    private int baloesAtingidos = 0;
 
     private BoxCollider hitBox;
 
@@ -56,7 +57,12 @@ public class projectile : MonoBehaviour
 
                 if (damageable != null)
                 {
-                    damageable.damage(PData.damage, gameObject.GetInstanceID());
+                    damageable.damage(PData.damage);
+                    baloesAtingidos++;
+                    if (baloesAtingidos >= PData.punchingPower)
+                    {
+                        destruirProjetil();
+                    }
                 }
             }
 
@@ -65,8 +71,16 @@ public class projectile : MonoBehaviour
 
     }
 
-   
-    public bool detectarColisaoPelaTag(string tag)
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("parede"))
+        {
+            ricochetear(collision);
+        }
+    }
+
+
+    public Collider detectarColisaoPelaTag(string tag)
     {
         Collider[] colliders = Physics.OverlapBox(transform.position, hitBox.size.x * transform.localScale, transform.rotation);
 
@@ -74,25 +88,47 @@ public class projectile : MonoBehaviour
         {
             for (int i = 0; i < colliders.Length; i++)
             {
-                if (colliders[i].transform.tag == tag) {  return true; }
+                if (colliders[i].transform.tag == tag) {
+                    return colliders[i];
+                }
             }
         }
 
-        return false;
+        return null;
     }
+
     public void setDirection(Vector3 direction)
     {
         velocity = direction * vel;
     }
 
+    public void destruirProjetil()
+    {
+        Destroy(gameObject);
+    }
+
+
+    public void ricochetear(Collision colisao)
+    {
+
+        Vector3 normalColisao = colisao.contacts[0].normal;
+
+        Vector3 direcaoRicochete = Vector3.Reflect(velocity, normalColisao);
+
+        float coeficienteDeRestituicao = 0.1f;
+
+        // Vf = e * v ---------- Vf = velocidade final / e = coeficiente de restituição / v = velocidade inicial
+        velocity = direcaoRicochete * coeficienteDeRestituicao;
+
+    }
 
     public void estacar()
     {
-        Debug.Log("MAG " + velocity.magnitude);
+        //Debug.Log("MAG " + velocity.magnitude);
 
         if (!detectarColisaoPelaTag("parede")) return;
 
-        float velMin = 8;
+        float velMin = 10;
 
         if (velocity.magnitude > velMin || estaEstacado) {
             velocity = Vector3.zero;
@@ -147,7 +183,7 @@ public class projectile : MonoBehaviour
     {
         gravidade();
         desaceleracao();
-        if (PData.isPointed) estacar();
+        if (PData.isPointed) estacar(); //else ricochetear();
 
         //Debug.Log("Vel" + velocity);
         transform.position += velocity * Time.deltaTime;
