@@ -10,4 +10,5 @@ public class projectileData : ScriptableObject
     public float damage = 1;
     public float weight = 1;
     public bool isPointed = false;
+    public int punchingPower = 1;
 }
