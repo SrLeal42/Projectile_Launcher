@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class projectile : MonoBehaviour
@@ -25,6 +26,10 @@ public class projectile : MonoBehaviour
     private int baloesAtingidos = 0;
 
     private BoxCollider hitBox;
+    private Transform hitboxChild = null;
+    private Dictionary<Collider, GameObject> collidersFilhos = new Dictionary<Collider, GameObject>();// dicionario para projeteis com diferentes hitbox, como machado
+
+    private Vector3 newRotation = Vector3.zero;
 
     // Start is called before the first frame update
     void Start()
@@ -32,6 +37,18 @@ public class projectile : MonoBehaviour
         //CC = GetComponent<CharacterController>();
         hitBox = GetComponent<BoxCollider>();
         timeToDestroy = PData.timeToDestroy;
+
+        foreach (Transform child in transform)
+        {
+            Collider collider = child.GetComponent<Collider>();
+            hitBox = child.GetComponent<BoxCollider>();
+            hitboxChild = child;
+            if (collider != null)
+            {
+                collidersFilhos.Add(collider, child.gameObject);
+            }
+        }
+
     }
 
     // Update is called once per frame
@@ -69,20 +86,49 @@ public class projectile : MonoBehaviour
 
         }
 
+       
+
     }
 
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.CompareTag("parede"))
         {
-            ricochetear(collision);
+           if (!PData.isPointed) ricochetear(collision);
+
+            if (transform.tag == "machado") { 
+
+                foreach (ContactPoint contact in collision.contacts)
+                {
+                    foreach (var entry in collidersFilhos)
+                    {
+                        if (entry.Key.bounds.Contains(contact.point))
+                        {
+                            GameObject filhoQueColidiu = entry.Value;
+                            //Debug.Log("O filho que colidiu é: " + filhoQueColidiu.name);
+
+                            if (filhoQueColidiu.transform.tag == "cabecaMachado")
+                            {
+                                Debug.Log("O filho que colidiu é: " + filhoQueColidiu.name);
+
+                                estacar();
+                            }
+                    
+                        }
+                    }
+                }
+            }
+            
         }
+
     }
 
 
     public Collider detectarColisaoPelaTag(string tag)
     {
-        Collider[] colliders = Physics.OverlapBox(transform.position, hitBox.size.x * transform.localScale, transform.rotation);
+        Vector3 scale = hitboxChild ? hitboxChild.localScale : transform.localScale; 
+        Vector3 colliderHitBox = new Vector3(hitBox.size.x * scale.x, hitBox.size.y * scale.y, hitBox.size.z * scale.z);
+        Collider[] colliders = Physics.OverlapBox(transform.position, colliderHitBox / 2, transform.rotation);
 
         if (colliders.Length > 0)
         {
@@ -126,7 +172,7 @@ public class projectile : MonoBehaviour
     {
         //Debug.Log("MAG " + velocity.magnitude);
 
-        if (!detectarColisaoPelaTag("parede")) return;
+        if (!detectarColisaoPelaTag("parede")) return; 
 
         float velMin = 10;
 
@@ -188,8 +234,27 @@ public class projectile : MonoBehaviour
         //Debug.Log("Vel" + velocity);
         transform.position += velocity * Time.deltaTime;
 
-        transform.forward = velocity != Vector3.zero? 
-            Vector3.MoveTowards(transform.forward, velocity, 100f * Time.deltaTime): transform.forward;//olhando para o movimento
+
+        if (transform.tag == "machado" && !estaEstacado)
+        {
+            Quaternion rotacao = Quaternion.Euler(800f * Time.deltaTime, 0, 0);
+            transform.rotation *= rotacao;
+        } else
+        {
+            transform.forward = velocity != Vector3.zero ?
+                Vector3.MoveTowards(transform.forward, velocity, 100f * Time.deltaTime) : transform.forward;//olhando para o movimento
+        }
+
+        
     }
+
+
+    private void OnDrawGizmos()
+    {
+        Vector3 scale = hitboxChild ? hitboxChild.localScale : transform.localScale;
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireCube(transform.position, new Vector3(hitBox.size.x * scale.x, hitBox.size.y * scale.y, hitBox.size.z * scale.z));
+    }
+
 
 }
