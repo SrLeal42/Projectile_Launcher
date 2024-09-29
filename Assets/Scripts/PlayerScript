@@ -17,13 +17,22 @@ public class PlayerScript : MonoBehaviour
 
     [Header("Trajetória")]
     public LineRenderer lineRenderer;
-    public int lineResolution = 10; // Quantos pontos compõem a linha
-    public float timeIntervalinPoints = 0.01f; // Intervalo de tempo entre cada ponto
+    private float lineAlpha = 0.5f;
+    private int lineResolution = 100; // Quantos pontos compõem a linha
+    private float timeIntervalinPoints = 0.01f; // Intervalo de tempo entre cada ponto
 
     // Start is called before the first frame update
     void Start()
     {
-        
+        // Alterando o alpha da linha
+        Color startColor = lineRenderer.startColor;
+        Color endColor = lineRenderer.endColor;
+        startColor.a = lineAlpha;
+        endColor.a = lineAlpha;
+        lineRenderer.startColor = startColor;
+        lineRenderer.endColor = endColor;
+
+
     }
 
     // Update is called once per frame
@@ -32,8 +41,8 @@ public class PlayerScript : MonoBehaviour
 
         if (Input.GetKey(KeyCode.Mouse0))
         {
-            power += .08f;
-            power = power > maxPower ? maxPower : power;
+            power += currentWeapon.WData.powerIncrease;
+            power = power > currentWeapon.WData.maxPower ? currentWeapon.WData.maxPower : power;
 
             // Lança um Raycast a partir da posição do mouse na tela
             Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
@@ -58,7 +67,7 @@ public class PlayerScript : MonoBehaviour
 
         if (Input.GetKeyUp(KeyCode.Mouse0))
         {
-            Debug.Log(power);
+            //Debug.Log(power);
             
 
             // Lança um Raycast a partir da posição do mouse na tela
@@ -83,6 +92,7 @@ public class PlayerScript : MonoBehaviour
 
 
             //currentWeapon.shoot(power);
+            stopDrawTrajectory();
             power = 0f;
         }
 
@@ -90,6 +100,8 @@ public class PlayerScript : MonoBehaviour
 
     public void drawTrajectory(Vector3 _dir)
     {
+        lineRenderer.enabled = true;
+
         Vector3 origin = muzzle.transform.position;
         Vector3 startVelocity = power * _dir;
         lineRenderer.positionCount = lineResolution;
@@ -111,5 +123,11 @@ public class PlayerScript : MonoBehaviour
         }
 
     }
+
+    public void stopDrawTrajectory()
+    {
+        lineRenderer.enabled = false;
+    }
+
 
 }
