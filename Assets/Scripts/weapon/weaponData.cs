@@ -12,12 +12,11 @@ public class weaponData : ScriptableObject
 
     [Header("Tiro")]
     public Transform bulletPrefab;
-    public float shootingTime;
     public float powerIncrease = 0.8f;
     public float maxPower = 50f;
     [Header("Recarregar")]
     public float currentAmmo;
-
+    public float reloadingTime;
 
     [HideInInspector] public bool reloading = false;
 }
