@@ -8,6 +8,7 @@ public class BallonScript : MonoBehaviour
     private Vector3 direction;
     public int vida = 1;
     public float vel = 1.5f;
+    public float timeIncrease = 10f;
 
     public float timeToDestroy = 10f;
 
