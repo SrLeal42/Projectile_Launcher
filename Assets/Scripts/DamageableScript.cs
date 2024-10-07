@@ -7,6 +7,7 @@ public class DamageableScript : MonoBehaviour, IDamageableScript
 {
     private BallonScript BS;
     private float health = 0;
+    private PlayerScript player;
 
     private void Awake()
     {
@@ -17,6 +18,7 @@ public class DamageableScript : MonoBehaviour, IDamageableScript
     {
         if (health <= 0)
         {
+            player.increasingTimeAndUpdateBar(BS.timeIncrease);
             Destroy(gameObject);
         }
     }
@@ -34,6 +36,7 @@ public class DamageableScript : MonoBehaviour, IDamageableScript
     void Start()
     {
         BS = GetComponent<BallonScript>();
+        player = FindFirstObjectByType<PlayerScript>();
         health = BS.vida;
     }
 
