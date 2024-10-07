@@ -29,13 +29,15 @@ public class projectile : MonoBehaviour
     private Transform hitboxChild = null;
     private Dictionary<Collider, GameObject> collidersFilhos = new Dictionary<Collider, GameObject>();// dicionario para projeteis com diferentes hitbox, como machado
 
-    private Vector3 newRotation = Vector3.zero;
+    private float RotationVel = 600f;
+    private Rigidbody rb;
 
     // Start is called before the first frame update
     void Start()
     {
         //CC = GetComponent<CharacterController>();
         hitBox = GetComponent<BoxCollider>();
+        rb = GetComponent<Rigidbody>();
         timeToDestroy = PData.timeToDestroy;
 
         foreach (Transform child in transform)
@@ -96,6 +98,9 @@ public class projectile : MonoBehaviour
         {
            if (!PData.isPointed) ricochetear(collision);
 
+
+
+
             if (transform.tag == "machado") { 
 
                 foreach (ContactPoint contact in collision.contacts)
@@ -109,15 +114,17 @@ public class projectile : MonoBehaviour
 
                             if (filhoQueColidiu.transform.tag == "cabecaMachado")
                             {
-                                Debug.Log("O filho que colidiu é: " + filhoQueColidiu.name);
-
                                 estacar();
-                            }
-                    
+                            } 
                         }
                     }
                 }
             }
+
+
+
+
+
             
         }
 
@@ -195,7 +202,7 @@ public class projectile : MonoBehaviour
 
         if (detectarColisaoPelaTag("chao"))
         {
-            float groundFriction = 5f * PData.weight;
+            float groundFriction = 20f * PData.weight;
             velocity *= (1 - groundFriction * Time.deltaTime);
 
             if (speedMagnitude < 0.1)
@@ -219,6 +226,8 @@ public class projectile : MonoBehaviour
         if (detectarColisaoPelaTag("chao"))
         {
             velocity.y = 0;
+            RotationVel = 0;
+            if(rb) rb.freezeRotation = false;
             return;
         }
         
@@ -229,7 +238,7 @@ public class projectile : MonoBehaviour
     {
         gravidade();
         desaceleracao();
-        if (PData.isPointed) estacar(); //else ricochetear();
+        if (PData.isPointed) estacar();
 
         //Debug.Log("Vel" + velocity);
         transform.position += velocity * Time.deltaTime;
@@ -237,7 +246,7 @@ public class projectile : MonoBehaviour
 
         if (transform.tag == "machado" && !estaEstacado)
         {
-            Quaternion rotacao = Quaternion.Euler(800f * Time.deltaTime, 0, 0);
+            Quaternion rotacao = Quaternion.Euler( RotationVel * Time.deltaTime, 0, 0);
             transform.rotation *= rotacao;
         } else
         {
@@ -251,9 +260,9 @@ public class projectile : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        Vector3 scale = hitboxChild ? hitboxChild.localScale : transform.localScale;
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireCube(transform.position, new Vector3(hitBox.size.x * scale.x, hitBox.size.y * scale.y, hitBox.size.z * scale.z));
+        //Vector3 scale = hitboxChild ? hitboxChild.localScale : transform.localScale;
+        //Gizmos.color = Color.red;
+        //Gizmos.DrawWireCube(transform.position, new Vector3(hitBox.size.x * scale.x, hitBox.size.y * scale.y, hitBox.size.z * scale.z));
     }
 
 
