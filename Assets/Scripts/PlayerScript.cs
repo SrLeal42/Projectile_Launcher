@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerScript : MonoBehaviour
 {
@@ -21,9 +23,21 @@ public class PlayerScript : MonoBehaviour
     private int lineResolution = 100; // Quantos pontos compõem a linha
     private float timeIntervalinPoints = 0.01f; // Intervalo de tempo entre cada ponto
 
+    [Header("Timer")]
+    public float maxTempo = 60f;
+    public float currentTime = 60f;
+    public float multTimer = 1.2f;
+    public Slider timerBar;
+    public Image fillImage;
+    private Color fullColor = Color.green; // Cor da barra cheia
+    private Color emptyColor = Color.red; // Cor da barra vazia
+
     // Start is called before the first frame update
     void Start()
     {
+        // Setando o tempo atual no maximo
+        currentTime = maxTempo;
+
         // Alterando o alpha da linha
         Color startColor = lineRenderer.startColor;
         Color endColor = lineRenderer.endColor;
@@ -38,6 +52,8 @@ public class PlayerScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
+        decreasingTimeAndUpdateBar();
 
         if (Input.GetKey(KeyCode.Mouse0))
         {
@@ -127,6 +143,25 @@ public class PlayerScript : MonoBehaviour
     public void stopDrawTrajectory()
     {
         lineRenderer.enabled = false;
+    }
+
+
+    public void decreasingTimeAndUpdateBar()
+    {
+        currentTime -= Time.deltaTime * multTimer;
+        currentTime = Mathf.Clamp(currentTime, 0f, maxTempo);
+        timerBar.value = currentTime / maxTempo;
+        
+        fillImage.color = Color.Lerp(emptyColor, fullColor, timerBar.value);
+    }
+
+    public void increasingTimeAndUpdateBar(float increase)
+    {
+        currentTime += increase * (multTimer * 0.5f);
+        currentTime = Mathf.Clamp(currentTime, 0f, maxTempo);
+        timerBar.value = currentTime / maxTempo;
+
+        fillImage.color = Color.Lerp(emptyColor, fullColor, timerBar.value);
     }
 
 
