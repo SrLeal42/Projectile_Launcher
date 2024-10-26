@@ -70,6 +70,7 @@ public class weaponScript : MonoBehaviour
 
             Transform bulletObj = Instantiate(WData.bulletPrefab, muzzle.position, muzzle.rotation);
             bulletObj.GetComponent<projectile>().vel = power;
+            bulletObj.GetComponent<projectile>().CSV_Forca = (int)power;
             bulletObj.GetComponent<projectile>().setDirection(_dir);
             bulletObj.transform.forward = _dir;
 
