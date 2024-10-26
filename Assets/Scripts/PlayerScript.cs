@@ -7,12 +7,23 @@ using UnityEngine.UI;
 
 public class PlayerScript : MonoBehaviour
 {
+  
+
+    public CSVScript CSVScript;
 
     public weaponScript currentWeapon;
     public float power = 0f;
     public float maxPower = 50f;
     public Transform muzzle;
     public Camera playerCamera;
+
+    [Header("Game State")]
+    public string gameState = "menuinicial";
+
+    [Header("Canvas")]
+    Dictionary<string, Canvas> CanvasDic = new Dictionary<string, Canvas>();
+    public Canvas canvasHUD;
+    public Canvas canvasMenu;
 
     [Header("Gravidade")]
     public float gravEstatica = -9.81f; // Gravidade estatica 
@@ -24,9 +35,12 @@ public class PlayerScript : MonoBehaviour
     private float timeIntervalinPoints = 0.01f; // Intervalo de tempo entre cada ponto
 
     [Header("Timer")]
-    public float maxTempo = 60f;
-    public float currentTime = 60f;
-    public float multTimer = 1.2f;
+    float maxTempo = 120f;
+    float currentTime = 120f;
+    public float multTimer = 1f;
+    float multTimerMax = 15f; // Limite que multTimer pode chegar 
+    float DecreaseAmountTimer = 0.05f; // Usamos essa variavel para aumentar o multTimer com o tempo
+    float IncreaseAmountTimer = 0.2f; // Usamos essa variavel para multiplicar o multTimer e reduzir a quantidade de tempo aumentando ao estourar um balao
     public Slider timerBar;
     public Image fillImage;
     private Color fullColor = Color.green; // Cor da barra cheia
@@ -35,6 +49,10 @@ public class PlayerScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+
+        CanvasDic.Add("HUD", canvasHUD);
+        CanvasDic.Add("Menu", canvasMenu);
+
         // Setando o tempo atual no maximo
         currentTime = maxTempo;
 
@@ -46,12 +64,30 @@ public class PlayerScript : MonoBehaviour
         lineRenderer.startColor = startColor;
         lineRenderer.endColor = endColor;
 
-
     }
 
     // Update is called once per frame
     void Update()
     {
+
+        switch (gameState) {
+
+            case "playing": gameStatePlaying();
+                break;
+
+            case "menuinicial":
+                if (canvasMenu.enabled != true) changeCanvas("Menu");
+                break;
+        
+        }
+
+
+    }
+
+
+    void gameStatePlaying()
+    {
+        if(canvasHUD.enabled != true) changeCanvas("HUD");
 
         decreasingTimeAndUpdateBar();
 
@@ -84,7 +120,7 @@ public class PlayerScript : MonoBehaviour
         if (Input.GetKeyUp(KeyCode.Mouse0))
         {
             //Debug.Log(power);
-            
+
 
             // Lança um Raycast a partir da posição do mouse na tela
             Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
@@ -112,6 +148,24 @@ public class PlayerScript : MonoBehaviour
             power = 0f;
         }
 
+        if (Input.GetKeyDown(KeyCode.S))
+        {
+            CSVScript.saving();
+        }
+    }
+
+    public void changeGameState (string state)
+    {
+        gameState = state;
+    } 
+
+    public void changeCanvas(string canvas)
+    {
+        foreach (KeyValuePair<string, Canvas> c in CanvasDic)
+        {
+            c.Value.enabled = c.Key == canvas;
+        }
+     
     }
 
     public void drawTrajectory(Vector3 _dir)
@@ -148,20 +202,21 @@ public class PlayerScript : MonoBehaviour
 
     public void decreasingTimeAndUpdateBar()
     {
-        currentTime -= Time.deltaTime * multTimer;
-        currentTime = Mathf.Clamp(currentTime, 0f, maxTempo);
-        timerBar.value = currentTime / maxTempo;
+        currentTime -= Time.deltaTime * multTimer; // Diminuindo o tempo usando um mutiplicador para aumentar o decrecimento 
+        multTimer += multTimer >= multTimerMax? 0 : DecreaseAmountTimer * Time.deltaTime; // Aumentando o mutiplicador do decrecimento do tempo utilizando um montante pré-definido
+        currentTime = Mathf.Clamp(currentTime, 0f, maxTempo); // Impedindo que o current time seja menor que 0 e maior que o numero máximo 
+        timerBar.value = currentTime / maxTempo; // Atualizando a barra de progresso com o valor do tempo atual 
         
-        fillImage.color = Color.Lerp(emptyColor, fullColor, timerBar.value);
+        fillImage.color = Color.Lerp(emptyColor, fullColor, timerBar.value); // Modificando a cor da barra para efeito visual
     }
 
     public void increasingTimeAndUpdateBar(float increase)
     {
-        currentTime += increase * (multTimer * 0.5f);
-        currentTime = Mathf.Clamp(currentTime, 0f, maxTempo);
-        timerBar.value = currentTime / maxTempo;
+        currentTime += increase * (multTimer * IncreaseAmountTimer); // Aumentando o tempo atual com base no produto entre o multTimer e um montante
+        currentTime = Mathf.Clamp(currentTime, 0f, maxTempo); // Impedindo que o current time seja menor que 0 e maior que o numero máximo
+        timerBar.value = currentTime / maxTempo; // Atualizando a barra de progresso com o valor do tempo atual 
 
-        fillImage.color = Color.Lerp(emptyColor, fullColor, timerBar.value);
+        fillImage.color = Color.Lerp(emptyColor, fullColor, timerBar.value); // Modificando a cor da barra para efeito visual
     }
 
 
