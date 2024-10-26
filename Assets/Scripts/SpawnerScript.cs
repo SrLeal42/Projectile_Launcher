@@ -5,14 +5,28 @@ using UnityEngine;
 public class SpawnerScript : MonoBehaviour
 {
 
+    public PlayerScript PS;
+
     [Header("Limites Areas")]
-    public Vector3 area1Min = new Vector3(15,0,-3);
+    public Vector3 area1Min = new Vector3(15,2,-3);
     public Vector3 area1Max = new Vector3(16, 5, 7);
-    public Vector3 area2Min = new Vector3(-15, 0, -3);
+    public Vector3 area2Min = new Vector3(-15, 2, -3);
     public Vector3 area2Max = new Vector3(-16, 5, 7);
 
     [Header("Balões")]
     public Transform[] ballons;
+
+    [Header("Porcetagem de Spawn")]
+    private float B1porcentagem = 80f;
+    //private float B2porcentagem = 30f;
+
+    [Header("Tempo entre cada spawn")]
+    private float spawnTime = 2f;
+    private float spawnTimer = 0f;
+
+    [Header("Configurações de Dificuldade")]
+    public float minSpawnTime = 0.5f; // Tempo mínimo entre os spawns
+    private float timeReductionRate = 0.02f; // Quanto reduzir por segundo
 
     // Start is called before the first frame update
     void Start()
@@ -24,10 +38,38 @@ public class SpawnerScript : MonoBehaviour
     void Update()
     {
 
-        if (Input.GetKeyDown(KeyCode.Space))
+        switch (PS.gameState)
+        {
+
+            case "playing":
+
+                spawnTimer += Time.deltaTime;
+                if (spawnTimer >= spawnTime)
+                {
+                    Debug.Log(spawnTime);
+                    spawnarBalao();
+                    spawnTimer = 0f;
+
+                    // Reduz o tempo entre os spawns, até o mínimo definido
+                    spawnTime = Mathf.Max(minSpawnTime, spawnTime - timeReductionRate);
+                }
+
+                break;
+
+        }
+
+
+
+
+
+
+
+        
+
+        /*if (Input.GetKeyDown(KeyCode.Space))
         {
             spawnarBalao();
-        }
+        }*/
 
     }
 
@@ -45,7 +87,8 @@ public class SpawnerScript : MonoBehaviour
 
     public void spawnarBalao(Transform balao = null, int area = -1)
     {
-        balao = balao == null ? ballons[Random.Range(0, ballons.Length)] : balao;
+
+        balao = balao == null ? getRandomBalao() : balao;
         area = area == -1 ? Random.Range(0, 2) : area;
 
         Vector3 randomPosition = new Vector3(0,0,0);
@@ -72,5 +115,15 @@ public class SpawnerScript : MonoBehaviour
 
     }
 
+
+
+    public Transform getRandomBalao()
+    {
+        int randomNum = Random.Range(1, 101);
+
+        if (randomNum <= B1porcentagem) return ballons[0];
+        //if (randomNum <= B2porcentagem) return ballons[1]; // Isso deve mudar se for adicionado novos balões
+        return ballons[1];
+    } 
 
 }
