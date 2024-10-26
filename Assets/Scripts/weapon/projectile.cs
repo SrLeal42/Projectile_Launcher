@@ -6,9 +6,17 @@ using UnityEngine;
 public class projectile : MonoBehaviour
 {
     public projectileData PData;
+    private CSVScript CSV;
+
+    [Header("CSV")]
+    public int CSV_Projetil; // 0 = estilingue / 1 = arco / 2 = machado
+    public int CSV_Forca;
+    private int CSV_TempoPouso; // Em milissegundos
+    private int CSV_Qtd_Baloes_acertado;
+    private int CSV_Distancia;
 
     [Header("Gravidade")]
-    public float gravEstatica = -9.81f; // Gravidade estatica 
+    private float gravEstatica = -9.81f; // Gravidade estatica 
     public float grav_mult = 1.5f; // Multiplicador da gravidade
 
     [Header("Resistência do ar")]
@@ -20,8 +28,10 @@ public class projectile : MonoBehaviour
     [HideInInspector] public float vel;
 
 
+    [HideInInspector] public Vector3 initialPos; 
+
     private float timeToDestroy;
-    
+
     private bool estaEstacado = false;
     private int baloesAtingidos = 0;
 
@@ -31,11 +41,11 @@ public class projectile : MonoBehaviour
 
     private float RotationVel = 600f;
     private Rigidbody rb;
-
     // Start is called before the first frame update
     void Start()
     {
-        //CC = GetComponent<CharacterController>();
+        CSV = GameObject.Find("CSV").GetComponent<CSVScript>();
+        initialPos = transform.position;
         hitBox = GetComponent<BoxCollider>();
         rb = GetComponent<Rigidbody>();
         timeToDestroy = PData.timeToDestroy;
@@ -60,7 +70,7 @@ public class projectile : MonoBehaviour
 
         if (timeToDestroy <= 0)
         {
-            Destroy(gameObject);
+            destruirProjetil();
         }
 
         timeToDestroy -= 1 * Time.deltaTime;
@@ -157,6 +167,11 @@ public class projectile : MonoBehaviour
 
     public void destruirProjetil()
     {
+        CSV_Qtd_Baloes_acertado = baloesAtingidos;
+        setCSV_tempoPouso();
+        CSV_Distancia = (int)Vector3.Distance(initialPos, transform.position);
+
+        CSV.addNewLine(CSV_Projetil, CSV_TempoPouso, CSV_Qtd_Baloes_acertado, CSV_Forca, CSV_Distancia);
         Destroy(gameObject);
     }
 
@@ -179,7 +194,9 @@ public class projectile : MonoBehaviour
     {
         //Debug.Log("MAG " + velocity.magnitude);
 
-        if (!detectarColisaoPelaTag("parede")) return; 
+        if (!detectarColisaoPelaTag("parede")) return;
+
+        setCSV_tempoPouso();
 
         float velMin = 10;
 
@@ -227,7 +244,8 @@ public class projectile : MonoBehaviour
         {
             velocity.y = 0;
             RotationVel = 0;
-            if(rb) rb.freezeRotation = false;
+            setCSV_tempoPouso();
+            if (rb) rb.freezeRotation = false;
             return;
         }
         
@@ -255,6 +273,16 @@ public class projectile : MonoBehaviour
         }
 
         
+    }
+
+
+    void setCSV_tempoPouso()
+    {
+
+        if (CSV_TempoPouso != 0) return;
+
+        CSV_TempoPouso = (int)((PData.timeToDestroy - timeToDestroy) * 1000); // Milissegundos
+
     }
 
 
