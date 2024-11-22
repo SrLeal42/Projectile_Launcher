@@ -21,7 +21,8 @@ public class SpawnerScript : MonoBehaviour
     //private float B2porcentagem = 30f;
 
     [Header("Tempo entre cada spawn")]
-    private float spawnTime = 2f;
+    private float spawnTimeinit = 2f; // Tempo de spawn inicial
+    private float spawnTime;
     private float spawnTimer = 0f;
 
     [Header("Configurações de Dificuldade")]
@@ -31,7 +32,7 @@ public class SpawnerScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        spawnTime = spawnTimeinit;
     }
 
     // Update is called once per frame
@@ -46,7 +47,7 @@ public class SpawnerScript : MonoBehaviour
                 spawnTimer += Time.deltaTime;
                 if (spawnTimer >= spawnTime)
                 {
-                    Debug.Log(spawnTime);
+                    //Debug.Log(spawnTime);
                     spawnarBalao();
                     spawnTimer = 0f;
 
@@ -125,5 +126,12 @@ public class SpawnerScript : MonoBehaviour
         //if (randomNum <= B2porcentagem) return ballons[1]; // Isso deve mudar se for adicionado novos balões
         return ballons[1];
     } 
+
+
+    public void ResetParamter()
+    {
+        spawnTime = spawnTimeinit;
+    } 
+
 
 }
