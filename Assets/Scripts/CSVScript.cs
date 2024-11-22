@@ -5,7 +5,8 @@ using UnityEngine;
 
 public class CSVScript : MonoBehaviour
 {
-    public List<string> LinhasLista = new List<string>() { "projetil,tempo_pouso,qtd_baloes_acertados,forca,distancia" };
+    public List<string> LinhasLista = new List<string>() { "tempo_jogo,projetil,tempo_pouso,qtd_baloes_acertados,forca,distancia" };
+    public PlayerScript PlayerScript;
     private SaveCSV SaveCSV;
 
     // Start is called before the first frame update
@@ -22,12 +23,15 @@ public class CSVScript : MonoBehaviour
 
     public void addNewLine(int p, int TP, int QBA, int F, int dis)
     {
-        string linha  = p + "," + TP + "," + QBA + "," + F + "," + dis + "\n";
+
+        int tj = (int)PlayerScript.tempo_jogo;// Adicionando o tempo de jogo
+
+        string linha  = tj + "," + p + "," + TP + "," + QBA + "," + F + "," + dis + "\n";
         
         LinhasLista.Add(linha);
     }
 
-    public void saving()
+    public void saving(bool escolherDiretorio = false)
     {
         string linhas = "";
 
@@ -42,9 +46,13 @@ public class CSVScript : MonoBehaviour
              i ++;
         }
 
-        SaveCSV.saveCSV(linhas);
+       StartCoroutine(SaveCSV.saveCSV(linhas,escolherDiretorio));
     }
 
+    public void ResetLinhas()
+    {
+        LinhasLista = new List<string>() { "tempo_jogo,projetil,tempo_pouso,qtd_baloes_acertados,forca,distancia" };
+    }
 
 }
 
