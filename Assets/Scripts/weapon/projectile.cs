@@ -98,12 +98,12 @@ public class projectile : MonoBehaviour
 
         }
 
-       
 
     }
 
     private void OnCollisionEnter(Collision collision)
     {
+        
         if (collision.gameObject.CompareTag("parede"))
         {
            if (!PData.isPointed) ricochetear(collision);
@@ -143,7 +143,9 @@ public class projectile : MonoBehaviour
 
     public Collider detectarColisaoPelaTag(string tag)
     {
-        Vector3 scale = hitboxChild ? hitboxChild.localScale : transform.localScale; 
+
+        // Vector3 scale = hitboxChild ? hitboxChild.localScale : transform.localScale;
+        Vector3 scale = transform.localScale;
         Vector3 colliderHitBox = new Vector3(hitBox.size.x * scale.x, hitBox.size.y * scale.y, hitBox.size.z * scale.z);
         Collider[] colliders = Physics.OverlapBox(transform.position, colliderHitBox / 2, transform.rotation);
 
@@ -152,6 +154,7 @@ public class projectile : MonoBehaviour
             for (int i = 0; i < colliders.Length; i++)
             {
                 if (colliders[i].transform.tag == tag) {
+
                     return colliders[i];
                 }
             }
